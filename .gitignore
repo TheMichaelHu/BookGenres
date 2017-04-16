@@ -1,4 +1,5 @@
 plan
 *.csv
+*.npz
 proposal.pdf
 figures/*
