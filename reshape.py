@@ -4,8 +4,14 @@ from sklearn.decomposition import TruncatedSVD
 import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy import sparse
+import sys
 
-data = pd.read_csv('./ratings_Books_small.csv')
+if len(sys.argv) >= 2:
+    name = sys.argv[1]
+else:
+    raise "no name given"
+
+data = pd.read_csv('./ratings_Books_' + name + '.csv')
 data = data.drop(['timestamp'], 1)
 count = 0
 
@@ -13,20 +19,13 @@ count = 0
 def main():
     print "users", len(data['user'].unique())
     print "books", len(data['book'].unique())
-    name = "small"
 
     sparse_matrix = get_reshaped_data(name + "_reshaped_data")
-    # sparse_matrix = load_sparse_csr(name + "_reshaped_data.npz")
-
-    svd = TruncatedSVD(n_components=5)
-    svd.fit(sparse_matrix)
-
-    print svd.explained_variance_ratio_
-    print svd.explained_variance_ratio_.sum()
 
     # X_hat = pd.DataFrame(pca.fit_transform(X))
     # sns.jointplot(x=0, y=1, data=X_hat, xlim=(-.68, -.66), ylim=(-.25, -.2))
     # sns.plt.show()
+
 
 def get_reshaped_data(name):
     sparse_matrix = sparse.vstack(reshape_data().values)
@@ -37,11 +36,6 @@ def get_reshaped_data(name):
 def save_sparse_csr(name, matrix):
     np.savez(name, data=matrix.data, indices=matrix.indices,
              indptr=matrix.indptr, shape=matrix.shape)
-
-
-def load_sparse_csr(name):
-    loader = np.load(name)
-    return sparse.csr_matrix((loader['data'], loader['indices'], loader['indptr']), shape=loader['shape'])
 
 
 def reshape_data():
