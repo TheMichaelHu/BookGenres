@@ -13,7 +13,7 @@ else:
 
 
 def main():
-    eigenvalues = 10
+    eigenvalues = 30
     sparse_matrix = load_sparse_csr(name + "_reshaped_data.npz")
 
     U, Sigma, VT = randomized_svd(sparse_matrix, n_components=eigenvalues, n_iter=5, random_state=None)

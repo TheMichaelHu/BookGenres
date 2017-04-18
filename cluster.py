@@ -18,15 +18,14 @@ else:
 
 
 def main():
-    name = "small"
     sparse_matrix = load_sparse_csr(name + "_reshaped_data.npz")
 
-    svd = TruncatedSVD(n_components=2)
+    svd = TruncatedSVD(n_components=7)
     svd.fit(sparse_matrix)
     data = svd.fit_transform(sparse_matrix)
 
     # keep dropping lowest of 3 clusters
-    for i in range(16):
+    for i in range(10):
         hac = AgglomerativeClustering(n_clusters=3, affinity='cosine', linkage='average')
         hac.fit(data)
         clusters = hac.fit_predict(data)
@@ -42,17 +41,42 @@ def main():
 
         data = keep_clusters(clusters, count_order[:2], data)
 
-    num_clusters = 3
+    num_clusters = 2
     hac = AgglomerativeClustering(n_clusters=num_clusters, affinity='cosine', linkage='average')
     hac.fit(data)
     clusters = hac.fit_predict(data)
 
     # print_clusters(clusters, num_clusters, data)
 
-    plot_variance(data, 21)
+    # plot_variance(data, 21)
 
-    plot_dendrogram(hac, labels=hac.labels_)
+    labels = hac.labels_
+    labels = get_custom_labels(clusters)
+
+    plot_dendrogram(hac, labels=labels)
     plt.show()
+
+
+def get_custom_labels(clusters):
+    data = pd.read_csv('./ratings_Books_' + name + '.csv')
+    books = pd.Series(data['book'].unique(), name="book")
+    labels = [str(x) for x in clusters]
+    mappings = {"0439064864": "Harry Potter 2", "0439136350": "Harry Potter 3", "0590997297": "Animorphs 9", "0590997289": "Animorphs 8"}
+
+    for isbn in mappings:
+        idx = books[books == isbn].index[0]
+        labels[idx] = mappings[isbn] + " " + labels[idx]
+
+    return labels
+
+
+def plot_2d_data(matrix):
+    svd = TruncatedSVD(n_components=2)
+    svd.fit(matrix)
+    data = svd.fit_transform(matrix)
+    df = pd.DataFrame(data)
+    sns.jointplot(x=0, y=1, data=df)
+    sns.plt.show()
 
 
 def plot_variance(data, limit):
